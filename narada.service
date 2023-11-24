@@ -1,0 +1,10 @@
+[Unit]
+Description=NARADA service
+After=dev-serial-by\x2did-usb\x2d1a86_USB2.0\x2dSerial\x2dif00\x2dport0.device
+BindsTo=dev-serial-by\x2did-usb\x2d1a86_USB2.0\x2dSerial\x2dif00\x2dport0.device
+
+[Service]
+ExecStart=/opt/narada/narada.sh
+
+[Install]
+WantedBy=default.target
