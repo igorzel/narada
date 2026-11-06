@@ -5,7 +5,7 @@
 #######################################################################
 function _log {
 	local message=$1
-	echo "$message" >&2
+	echo "[$(date -Is)] $message" >&2
 }
 
 #######################################################################
@@ -50,10 +50,6 @@ elif [[ $(determine_environment) == "WSL" ]]; then
 	function lowerFlag {
 		_sendCommandToDevice "OFF"
 	}
-	function onExit {
-		lowerFlag
-		_log "Exiting."
-	}
 elif [[ $(determine_environment) == "UBUNTU_GNOME" ]]; then
 	LINUX_DEVICE=/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0
 
@@ -80,10 +76,6 @@ elif [[ $(determine_environment) == "UBUNTU_GNOME" ]]; then
 	function lowerFlag {
 		sendCommandToDevice "OFF"
 	}
-	function onExit {
-		lowerFlag
-		_log "Exiting."
-	}
 
 fi
 
@@ -95,6 +87,11 @@ setupDevice
 ###############################################################################
 # Set state to OFF on exit
 ###############################################################################
+function onExit {
+	lowerFlag
+	_log "Exiting."
+}
+
 trap "onExit" EXIT
 
 ###############################################################################
@@ -111,6 +108,5 @@ while true; do
 		lowerFlag
 	fi
 
-	# _log "Current time: $(date -Is)"
 	sleep 10
 done
