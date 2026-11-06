@@ -91,11 +91,9 @@ trap "onExit" EXIT
 ###############################################################################
 while true; do
 	if (is_microphone_in_use); then
-		# echo "[$(date -Is)] microphone is: IN USE"
 		_log "Microphone is in use. Raising flag."
 		raiseFlag
 	else
-		# echo "[$(date -Is)] microphone is: NOT USED"
 		_log "Microphone is not in use. Lowering flag."
 		lowerFlag
 	fi
