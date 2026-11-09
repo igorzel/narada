@@ -44,12 +44,6 @@ elif [[ $(determine_environment) == "WSL" ]]; then
 		local command=${1}
 		powershell.exe -Command "\$p = New-Object -TypeName System.IO.Ports.SerialPort -ArgumentList @('$WINDOWS_DEVICE', 9600); \$p.Open(); \$p.Write(\"$command\`n\"); \$p.Close()"
 	}
-	function raiseFlag {
-		_sendCommandToDevice "ON"
-	}
-	function lowerFlag {
-		_sendCommandToDevice "OFF"
-	}
 elif [[ $(determine_environment) == "UBUNTU_GNOME" ]]; then
 	LINUX_DEVICE=/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0
 
@@ -64,20 +58,18 @@ elif [[ $(determine_environment) == "UBUNTU_GNOME" ]]; then
 		# Setup serial port
 		stty -F $LINUX_DEVICE raw ispeed 9600 ospeed 9600 cs8 -ignpar -cstopb -echo -hupcl
 	}
-
-	function sendCommandToDevice {
-		local command=$1
+	function _sendCommandToDevice {
+		local command=${1}
 		echo "$command" >$LINUX_DEVICE
 	}
-
-	function raiseFlag {
-		sendCommandToDevice "ON"
-	}
-	function lowerFlag {
-		sendCommandToDevice "OFF"
-	}
-
 fi
+
+function raiseFlag {
+	_sendCommandToDevice "ON"
+}
+function lowerFlag {
+	_sendCommandToDevice "OFF"
+}
 
 ###############################################################################
 # Setup device
@@ -99,11 +91,9 @@ trap "onExit" EXIT
 ###############################################################################
 while true; do
 	if (is_microphone_in_use); then
-		# echo "[$(date -Is)] microphone is: IN USE"
 		_log "Microphone is in use. Raising flag."
 		raiseFlag
 	else
-		# echo "[$(date -Is)] microphone is: NOT USED"
 		_log "Microphone is not in use. Lowering flag."
 		lowerFlag
 	fi
