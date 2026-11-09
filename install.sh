@@ -1,33 +1,55 @@
 #!/usr/bin/env bash
 
+#######################################################################
+# Logging utility function
+#######################################################################
+function _log {
+	local message=$1
+	echo "[$(date -Is)] $message" >&2
+}
+
+#######################################################################
+# Determine if we are running in WSL or Ubuntu GNOME
+#######################################################################
+function determine_environment {
+	if [[ -f /etc/wsl.conf ]]; then
+		echo "WSL"
+	elif [[ "$XDG_CURRENT_DESKTOP" == "ubuntu:GNOME" ]]; then
+		echo "UBUNTU_GNOME"
+	else
+		echo "UNRECOGNIZED_ENVIRONMENT"
+	fi
+}
 
 #####################################################################
 
-echo "Install service"
+_log "Install service"
 
 rm -rf /opt/narada
 mkdir /opt/narada
+
 cp narada.sh /opt/narada
 
-
 #####################################################################
 
-echo "Install udev rule"
+if [[ "$(determine_environment)" == "UBUNTU_GNOME" ]]; then
+	_log "Install udev rule"
 
-cp 95-narada.rules /etc/udev/rules.d/
-udevadm control --reload-rules
-udevadm trigger
+	cp 95-narada.rules /etc/udev/rules.d/
+	udevadm control --reload-rules
+	udevadm trigger
+
+	_log "Install service unit"
+
+	cp ./narada.service /lib/systemd/system/
+	systemctl daemon-reload
+	sudo systemctl enable narada.service
+elif [[ "$(determine_environment)" == "WSL" ]]; then
+	_log "Install service unit"
+
+	cp ./narada-wsl.service /lib/systemd/system/
+	systemctl daemon-reload
+	sudo systemctl enable narada-wsl.service
+fi
 
 #####################################################################
-
-echo "Install service unit"
-
-cp ./narada.service /lib/systemd/system/
-systemctl daemon-reload
-sudo systemctl enable narada.service
-
-
-#####################################################################
-
-
-

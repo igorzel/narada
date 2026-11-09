@@ -1,0 +1,8 @@
+[Unit]
+Description=NARADA service
+
+[Service]
+ExecStart=/opt/narada/narada.sh
+
+[Install]
+WantedBy=default.target
