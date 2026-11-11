@@ -89,13 +89,21 @@ trap "onExit" EXIT
 ###############################################################################
 # Main loop
 ###############################################################################
+
+prev_state="UNKNOWN"
 while true; do
 	if (is_microphone_in_use); then
-		_log "Microphone is in use. Raising flag."
-		raiseFlag
+		if [[ "$prev_state" != "ON" ]]; then
+			_log "Microphone is in use. Raising flag."
+			raiseFlag
+			prev_state="ON"
+		fi
 	else
-		_log "Microphone is not in use. Lowering flag."
-		lowerFlag
+		if [[ "$prev_state" != "OFF" ]]; then
+			_log "Microphone is not in use. Lowering flag."
+			lowerFlag
+			prev_state="OFF"
+		fi
 	fi
 
 	sleep 10
