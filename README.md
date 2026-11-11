@@ -33,6 +33,9 @@ This project is designed for Linux users and has been tested on Ubuntu only.
 
 `sudo ./uninstall.sh`
 
+The uninstaller stops the service before disabling it and removing its files.
+If stopping fails, uninstallation aborts without removing files.
+
 
 # How it works
 The project consists of two components:
@@ -81,4 +84,3 @@ High level logic in [device.ino](device/device.ino):
     - Set Led pin to `LOW` to turn it off
     - Move servo to lower a flag with step 1 and delay
 7. Detach servo
-

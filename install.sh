@@ -33,6 +33,7 @@ cp narada.sh /opt/narada
 #####################################################################
 
 if [[ "$(determine_environment)" == "UBUNTU_GNOME" ]]; then
+	_log "Ubuntu GNOME environment detected."
 	_log "Install udev rule"
 
 	cp 95-narada.rules /etc/udev/rules.d/
@@ -43,13 +44,19 @@ if [[ "$(determine_environment)" == "UBUNTU_GNOME" ]]; then
 
 	cp ./narada.service /lib/systemd/system/
 	systemctl daemon-reload
-	sudo systemctl enable narada.service
+	systemctl enable narada.service
+	systemctl start narada.service
 elif [[ "$(determine_environment)" == "WSL" ]]; then
+	_log "WSL environment detected."
+	_log "Install powershell script"
+	cp ./is-microphone-in-use.ps1 /opt/narada/
+
 	_log "Install service unit"
 
 	cp ./narada-wsl.service /lib/systemd/system/
 	systemctl daemon-reload
-	sudo systemctl enable narada-wsl.service
+	systemctl enable narada-wsl.service
+	systemctl start narada-wsl.service
 fi
 
 #####################################################################

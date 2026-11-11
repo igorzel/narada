@@ -26,8 +26,21 @@ if [[ "$(determine_environment)" == "UNRECOGNIZED_ENVIRONMENT" ]]; then
 	_log "Unrecognized environment. Exiting."
 	exit 1
 elif [[ $(determine_environment) == "WSL" ]]; then
+	script_current_dir=$(dirname "$(realpath "$0")")
+	if ! POWERSHELL_EXE=$(command -v powershell.exe); then
+		POWERSHELL_EXE="/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+	fi
+	if [[ ! -x "$POWERSHELL_EXE" ]]; then
+		_log "Windows PowerShell was not found. Add its directory to the service PATH or mount the Windows C: drive at /mnt/c."
+		exit 1
+	fi
+	if ! "$POWERSHELL_EXE" -NoProfile -NonInteractive -Command 'exit 0'; then
+		_log "Cannot execute Windows PowerShell. Check that WSL Windows interoperability is available to this service."
+		exit 1
+	fi
+
 	function is_microphone_in_use {
-		mic=$(powershell.exe -NoProfile -ExecutionPolicy Bypass -File './is-microphone-in-use.ps1')
+		mic=$("$POWERSHELL_EXE" -NoProfile -ExecutionPolicy Bypass -File "$script_current_dir/is-microphone-in-use.ps1")
 		if [[ "${mic//$'\r'/}" == "True" ]]; then
 			return 0
 		fi
@@ -37,12 +50,12 @@ elif [[ $(determine_environment) == "WSL" ]]; then
 
 	function setupDevice {
 		_log "Setting up device."
-		WINDOWS_DEVICE=$(powershell.exe -Command '(Get-PnpDevice -PresentOnly -FriendlyName "*CH340*").FriendlyName' | grep -o 'COM[0-9]*')
+		WINDOWS_DEVICE=$("$POWERSHELL_EXE" -Command '(Get-PnpDevice -PresentOnly -FriendlyName "*CH340*").FriendlyName' | grep -o 'COM[0-9]*')
 		_log "Detected Windows device: $WINDOWS_DEVICE"
 	}
 	function _sendCommandToDevice {
 		local command=${1}
-		powershell.exe -Command "\$p = New-Object -TypeName System.IO.Ports.SerialPort -ArgumentList @('$WINDOWS_DEVICE', 9600); \$p.Open(); \$p.Write(\"$command\`n\"); \$p.Close()"
+		"$POWERSHELL_EXE" -Command "\$p = New-Object -TypeName System.IO.Ports.SerialPort -ArgumentList @('$WINDOWS_DEVICE', 9600); \$p.Open(); \$p.Write(\"$command\`n\"); \$p.Close()"
 	}
 elif [[ $(determine_environment) == "UBUNTU_GNOME" ]]; then
 	LINUX_DEVICE=/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0
